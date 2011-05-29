@@ -17,9 +17,7 @@ function init() {
     snake2.AddObserver(snake1);*/
 	mouse1.InitMouse();
     human.InitHuman(new Array(creatureIds.mouse1));
-	
-    
-
+   
 }
 
 function InitHuman(forbiddenLocationCreatureKeys)
