@@ -1,0 +1,2 @@
+ftp username - veegee, password musafa04
+vsftpd.conf - check

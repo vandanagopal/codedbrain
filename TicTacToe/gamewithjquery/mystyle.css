@@ -1,0 +1,25 @@
+
+table
+{
+table-layout:fixed;
+}
+
+
+td
+{
+height:98px;
+width:148px;
+background-color:blue;
+border: 1px solid black;
+
+}
+
+table
+{
+table-layout:fixed;
+}
+
+.creature
+{
+ display:none
+}
