@@ -2,12 +2,30 @@ $(document).ready(function() {
     init();
 });
 
+function Rat(timeInterval)
+{
+  this.ratHtmlId= creatureHtmlIds.rat;
+  this.timeInterval=timeInterval;
+  this.InitRat=InitRat;
+  this.SetTimeIntervalToActivateRat = SetTimeIntervalToActivateRat;
+  this.MoveRatToId=MoveRatToId;
+  this.showRat=showRat;
+  this.FreeRatFromCage=FreeRatFromCage;
+  this.DistractSnake=DistractSnake;
+  this.move = function(snake, newPosition, row, col){
+      if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake.snakeLocationId)){
+          this.MoveRatToId(newPosition);
+          return true;
+      }
+      return false;
+  }
+}
 
 function init() {
     locationsOfAllCreatures = new Array();
     movements= GetArrayOfMovementFunctions();
 	creatureHtmlIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"mouseCage1"};
-	creatureIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"mouse1"};
+	creatureIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"rat"};
     board = {numberOfCells : 36,numberOfColumns : 6,
         isOutOfBounds : function (row, column) {
                          if(row<0 || column<0 || row>5 || column>5) return true;
@@ -15,41 +33,39 @@ function init() {
                     }};
     snake1=new Snake(30,creatureHtmlIds.snake1,1000);
     snake2=new Snake(5,creatureHtmlIds.snake2, 500);
-    mouse1= new Rat(10,creatureHtmlIds.rat,"" ,500);
+    Rat.prototype = new Creature(10);
+    rat= new Rat("" ,500);
     human=new Human();
     snake1.InitSnake(new Array(creatureIds.snake2));
     snake2.InitSnake(new Array(creatureIds.snake1));
 
-	mouse1.InitRat();
+	rat.InitRat();
     human.InitHuman(new Array(creatureIds.rat));
    
 }
 
+
 function GetArrayOfMovementFunctions()
 {
     return [function(target){
-        var up = function(){return target.ratLocationId - board.numberOfColumns;};
-        return _do(row(target.ratLocationId) - 1, column(target.ratLocationId), target,up);
+        var up = function(){return target.locationId - board.numberOfColumns;};
+        return _do(row(target.locationId) - 1, column(target.locationId), target,up);
     },
         function(target){
-            var right = function(){return target.ratLocationId +1;};
-            return _do(row(target.ratLocationId), column(target.ratLocationId) + 1, target,right);
+            var right = function(){return target.locationId +1;};
+            return _do(row(target.locationId), column(target.locationId) + 1, target,right);
         }, function(target){
-            var down = function(){return target.ratLocationId + board.numberOfColumns;};
-            return _do(row(target.ratLocationId)+1, column(target.ratLocationId), target,down);
+            var down = function(){return target.locationId + board.numberOfColumns;};
+            return _do(row(target.locationId)+1, column(target.locationId), target,down);
         }, function(target){
-            var left = function(){return target.ratLocationId -1;};
-            return _do(row(target.ratLocationId), column(target.ratLocationId) - 1, target,left);
+            var left = function(){return target.locationId -1;};
+            return _do(row(target.locationId), column(target.locationId) - 1, target,left);
         }];
 }
 
-function _do(row, col, target, movement){
+function _do(row, col, target, movement,strategy){
     var newPosition = movement();
-    if(!board.isOutOfBounds(row, col) &&  target.ratLocationId != farthest(target.ratLocationId,newPosition, snake2.snakeLocationId)){
-        target.MoveRatToId(newPosition);
-        return true;
-    }
-    return false;
+    return target.move(snake2, newPosition, row, col);
 }
 
 function row(position){
@@ -128,25 +144,20 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval)
 
   this.ForbiddenLocationCreatureKeys;
   this.IsForbiddenPosition=IsForbiddenPosition;
+  this.move = function(target, newPosition, row, col){
+      if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake.snakeLocationId)){
+          this.MoveRatToId(newPosition);
+          return true;
+      }
+      return false;
+  }
   
 }
 
-
-
-function Rat(ratLocationId, ratCageId, ratFreeId,timeInterval)
-{
-  this.ratLocationId = ratLocationId;
-  this.ratHtmlId= ratCageId;
-  this.ratFreeId= ratFreeId;
-  this.timeInterval=timeInterval;
-  this.isRatInCage=true;
-  this.InitRat=InitRat;
-  this.SetTimeIntervalToActivateRat = SetTimeIntervalToActivateRat;
-  this.MoveRatToId=MoveRatToId;
-  this.showRat=showRat;
-  this.FreeRatFromCage=FreeRatFromCage;
-  this.DistractSnake=DistractSnake;
+var Creature = function(locationId){
+    this.locationId = locationId;
 }
+
 
 
 function InitRat()
@@ -163,7 +174,7 @@ function SetTimeIntervalToActivateRat()
 
 function showRat()
 {
-  this.MoveRatToId(this.ratLocationId);
+  this.MoveRatToId(this.locationId);
   var id=this.ratHtmlId;
   $("#"+id).fadeIn(5000);
   var rat=this;
@@ -175,7 +186,7 @@ function showRat()
  {
    $("#"+this.ratHtmlId).css('display','none');
    this.ratHtmlId="freeMouse";
-   this.MoveRatToId(this.ratLocationId);
+   this.MoveRatToId(this.locationId);
    $("#"+this.ratHtmlId).show();
    var rat=this;
    setTimeout(rat.DistractSnake,500);
@@ -185,8 +196,7 @@ function showRat()
 function DistractSnake()
  {
      for(var i=0;i< movements.length;i++)
-         if(movements[i](mouse1)) break;
-
+         if(movements[i](rat)) break;
      setTimeout(this.DistractSnake,1000);
 
  }
@@ -196,7 +206,6 @@ function InitSnake(forbiddenLocationCreatureKeys)
   this.ForbiddenLocationCreatureKeys = forbiddenLocationCreatureKeys;
   this.MoveSnakeToId(this.snakeLocationId);
 $(document.getElementById(this.snakeHtmlId)).show();
-//  periodicallyInvoke(moveSnake, this.timeInterval);
     this.SetTimeIntervalForSnakeMovement();
 }
 
@@ -209,9 +218,7 @@ function SetTimeIntervalForSnakeMovement() {
     snake.timeOutBinding = setTimeout(function(){snake.moveSnake();}, snake.timeInterval);
 }
 
-function periodicallyInvoke(func_to_invoke, interval) {
-    setTimeout(function(){func_to_invoke(); periodicallyInvoke();}, interval);
-}
+
 
 function moveSnake() {
 
@@ -283,7 +290,7 @@ function AreSnakeAndHumanInSameRow(snake) {
 
 function MoveRatToId(id)
 {
-    this.ratLocationId=id;
+    this.locationId=id;
     locationsOfAllCreatures[this.ratHtmlId] = id;
      MoveToSameLocationAsObject(document.getElementById(this.ratHtmlId),document.getElementById(id));
 }
