@@ -48,7 +48,7 @@ function init() {
     snake1=new Snake(30,creatureHtmlIds.snake1,500);
     snake2=new Snake(5,creatureHtmlIds.snake2, 500);
     rat= new Rat(20,200);
-    human=new Human();
+    human=new Human();	
     snake1.InitSnake(new Array(creatureIds.snake2));
     snake2.InitSnake(new Array(creatureIds.snake1));
 	rat.InitRat();
