@@ -120,10 +120,8 @@ function InitHuman(forbiddenLocationCreatureKeys)
 {
     this.ForbiddenLocationCreatureKeys = forbiddenLocationCreatureKeys;
     $("td").mouseover(MoveHuman);
-    var human=document.getElementById(this.humanHtmlId);
-    human.style.position = 'absolute';
-    human.style.top = document.getElementById(this.locationId).offsetTop +8;
-    human.style.left = document.getElementById(this.locationId).offsetLeft + 8;
+    var human=$("#"+this.humanHtmlId);
+    human.css({'position':'absolute','top': $("#"+this.locationId).offset().top,'left':$("#"+this.locationId).offset().left});
     $(human).show();
 }
 
@@ -165,7 +163,7 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval)
         if(this.IsForbiddenPosition(newPositionId)) return;
         this.locationId=newPositionId;
         locationsOfAllCreatures[this.snakeHtmlId] = newPositionId;
-        MoveToSameLocationAsObject(document.getElementById(this.snakeHtmlId),document.getElementById(newPositionId));
+        MoveToSameLocationAsObject($("#"+this.snakeHtmlId),$("#"+newPositionId));
     }
 
     this.Notify = function(target){
@@ -230,10 +228,9 @@ function InitSnake(forbiddenLocationCreatureKeys)
 {
   this.ForbiddenLocationCreatureKeys = forbiddenLocationCreatureKeys;
   this._assignPositionToSnake(this.locationId);
-$(document.getElementById(this.snakeHtmlId)).show();
-    this.SetTimeIntervalForSnakeMovement();
-
-    this.target=human;
+  $("#"+this.snakeHtmlId).show();
+  this.SetTimeIntervalForSnakeMovement();
+  this.target=human;
 
 }
 
@@ -266,7 +263,7 @@ function MoveRatToId(id)
 {
     this.locationId=id;
     locationsOfAllCreatures[this.ratHtmlId] = id;
-     MoveToSameLocationAsObject(document.getElementById(this.ratHtmlId),document.getElementById(id));
+     MoveToSameLocationAsObject($("#"+this.ratHtmlId),$("#"+id));
 }
 
 
@@ -281,15 +278,15 @@ function IsForbiddenPosition(id)
 
 function MoveToSameLocationAsObject(objectToBeMoved, targetObject)
 {
-    objectToBeMoved.style.position = 'absolute';
-    objectToBeMoved.style.top = targetObject.offsetTop +8;
-    objectToBeMoved.style.left = targetObject.offsetLeft + 8;
-}
+
+ objectToBeMoved.css({'position':'absolute','top':targetObject.offset().top,'left':targetObject.offset().left});
+
+ }
 
 function MoveHuman(ev) 
 {
    if(human.IsForbiddenPosition(this.id)) return;
-    MoveToSameLocationAsObject(document.getElementById(human.humanHtmlId),document.getElementById(this.id));
+    MoveToSameLocationAsObject($("#"+human.humanHtmlId),$("#"+this.id));
     human.locationId = this.id;
 
 }
