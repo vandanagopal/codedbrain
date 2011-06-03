@@ -14,6 +14,7 @@ function Rat(locationId, timeInterval)
   this.showRat=showRat;
   this.FreeRatFromCage=FreeRatFromCage;
   this.DistractSnake=DistractSnake;
+  this.increaseTimeIntervalBy = 10;
     this.isAlive=true;
   this.move = function(newPosition, row, col){
       if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake1.locationId)){
@@ -45,9 +46,9 @@ function init() {
                          if(row<0 || column<0 || row>5 || column>5) return true;
                          return false;
                     }};
-    snake1=new Snake(30,creatureHtmlIds.snake1,500);
-    snake2=new Snake(5,creatureHtmlIds.snake2, 500);
-    rat= new Rat(20,200);
+    snake1=new Snake(30,creatureHtmlIds.snake1,450);
+    snake2=new Snake(5,creatureHtmlIds.snake2, 450);
+    rat= new Rat(20,300);
     human=new Human();	
     snake1.InitSnake(new Array(creatureIds.snake2));
     snake2.InitSnake(new Array(creatureIds.snake1));
@@ -153,17 +154,17 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval)
   this.IsForbiddenPosition=IsForbiddenPosition;
   this.move = function(newPosition, row, col){
       if(!board.isOutOfBounds(row, col) &&  this.locationId != nearest(this.locationId,newPosition, this.target.locationId)){
-          this._assignPositionToSnake(newPosition);
-          return true;
+          return this._assignPositionToSnake(newPosition);
       }
       return false;
   };
    this._assignPositionToSnake = function(newPositionId)
     {
-        if(this.IsForbiddenPosition(newPositionId)) return;
+        if(this.IsForbiddenPosition(newPositionId)) return false;
         this.locationId=newPositionId;
         locationsOfAllCreatures[this.snakeHtmlId] = newPositionId;
         MoveToSameLocationAsObject($("#"+this.snakeHtmlId),$("#"+newPositionId));
+        return true;
     }
 
     this.Notify = function(target){
@@ -207,20 +208,22 @@ function showRat()
    this.MoveRatToId(this.locationId);
    $("#"+this.ratHtmlId).show();
    this.DistractSnake();
-//   setTimeout(rat.DistractSnake,100);
    this.Notify();
  }
 
 
 function ExecuteMovementInAllDirections(creature) {
     var loopSeed = rand(movements.length);
-    for (var i = 0; i < movements.length; i++)
-        if (movements[(loopSeed + i) % movements.length](creature)) break;
+    for (var i = 0; i < movements.length; i++){
+        var index = (loopSeed + i) % movements.length;
+        if (movements[index](creature)) break;
+    }
 }
 function DistractSnake()
  {
      ExecuteMovementInAllDirections(rat);
-     setTimeout(this.DistractSnake,100);
+
+     setTimeout(rat.DistractSnake,rat.timeInterval+=rat.increaseTimeIntervalBy);
 
  }
 
