@@ -2,10 +2,11 @@ $(document).ready(function() {
     init();
 });
 
-function Rat(locationId, timeInterval)
+function Rat(locationId, timeInterval,id)
 {
   this.observers=new Array();
   this.locationId = locationId;
+  this.id=id;
   this.htmlId= creatureHtmlIds.rat;
   this.timeInterval=timeInterval;
   this.InitRat=InitRat;
@@ -13,8 +14,9 @@ function Rat(locationId, timeInterval)
   this.showRat=showRat;
   this.FreeRatFromCage=FreeRatFromCage;
   this.DistractSnake=DistractSnake;
+  this.IsForbiddenPosition=IsForbiddenPosition;
+  this.ForbiddenLocationCreatureKeys=new Array();
   this.increaseTimeIntervalBy = 10;
-    this.isAlive=true;
   this.move = function(newPosition, row, col){
       if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake1.locationId)){
           MoveCreatureToId(this,newPosition);
@@ -38,17 +40,17 @@ function Rat(locationId, timeInterval)
 function init() {
     locationsOfAllCreatures = new Array();
     movements= movementFunctions();
-	creatureHtmlIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"mouseCage1"};
+	creatureHtmlIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"mouseCage1",snakeeatingmouse:"snakeeatingmouse"};
 	creatureIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"rat"};
     board = {numberOfCells : 36,numberOfColumns : 6,
         isOutOfBounds : function (row, column) {
                          if(row<0 || column<0 || row>5 || column>5) return true;
                          return false;
                     }};
-    snake1=new Snake(30,creatureHtmlIds.snake1,450);
-    snake2=new Snake(5,creatureHtmlIds.snake2, 450);
-    rat= new Rat(20,600);
-    human=new Human();	
+    snake1=new Snake(30,creatureHtmlIds.snake1,400,creatureIds.snake1);
+    snake2=new Snake(5,creatureHtmlIds.snake2, 400,creatureIds.snake2);
+    rat= new Rat(20,300,creatureIds.rat);
+    human=new Human(creatureIds.human);
     snake1.InitSnake(new Array(creatureIds.snake2));
     snake2.InitSnake(new Array(creatureIds.snake1));
 	rat.InitRat();
@@ -120,29 +122,30 @@ function InitHuman(forbiddenLocationCreatureKeys)
 {
     this.ForbiddenLocationCreatureKeys = forbiddenLocationCreatureKeys;
     $("td").mouseover(MoveHuman);
-    var human=$("#"+this.humanHtmlId);
+    var human=$("#"+this.htmlId);
     human.css({'position':'absolute','top': $("#"+this.locationId).offset().top,'left':$("#"+this.locationId).offset().left});
     $(human).show();
 }
 
-function Human()
+function Human(id)
 {
   this.locationId=2;
-  this.humanHtmlId=creatureHtmlIds.human;
+  this.id=id;
+  this.htmlId=creatureHtmlIds.human;
   this.InitHuman=InitHuman;
   this.IsForbiddenPosition=IsForbiddenPosition;
   this.ForbiddenLocationCreatureKeys;
-  this.IsForbiddenPosition=IsForbiddenPosition;
   this.die = function(){
        
   }
 }
 
 
-function Snake(snakeLocationId, snakeHtmlId, timeInterval)
+function Snake(snakeLocationId, snakeHtmlId, timeInterval,id)
 {
   this.locationId=snakeLocationId;
   this.htmlId=snakeHtmlId;
+  this.id=id;
   this.timeInterval=timeInterval;
   this.SetTimeIntervalForSnakeMovement = SetTimeIntervalForSnakeMovement;
   this._assignPositionToSnake = this._assignPositionToSnake;
@@ -159,11 +162,7 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval)
   };
    this._assignPositionToSnake = function(newPositionId)
     {
-        if(this.IsForbiddenPosition(newPositionId)) return false;
-        this.locationId=newPositionId;
-        locationsOfAllCreatures[this.htmlId] = newPositionId;
-        MoveToSameLocationAsObject($("#"+this.htmlId),$("#"+newPositionId));
-        return true;
+        return MoveCreatureToId(this,newPositionId);
     }
 
     this.Notify = function(target){
@@ -172,43 +171,49 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval)
     this.killTargetAndTakeAppropriateAction = function(){
         this.target.die();
         if(this.target==rat){
-            changePicForCreature(this,"snakeeatingmouse");
+            this.toggleHtmlId=this.htmlId;
+            changePicForCreature(this,creatureHtmlIds.snakeeatingmouse);
             simulateBloodFall(this);
-            this.target=null;
+            this.target=this;
         }
+    }
+    this.AfterBloodSimulationChangeTargetToHuman = function(){
+        this.target=human;
+        changePicForCreature(this,this.toggleHtmlId);
+        this.moveSnake();
     }
 
 }
 
-var Creature = function(locationId){
-    this.locationId = locationId;
-}
+
+function AnimateAndCreateBloodDrops(top,left,bloodDropIndex,snake) {
 
 
-function AnimateAndCreateBloodDrops(top,left,bloodDropIndex) {
     var blood_drop = $("#blood-drop" + bloodDropIndex);
-
-    blood_drop.css({'position':'absolute','top':top+30 ,'left':left+30});
+    blood_drop.css({'position':'absolute','top':top + 30 ,'left':left + 30});
     blood_drop.show();
     var val = 588 - blood_drop.offset().top;
-    blood_drop.animate({'top':'+=' + val,opacity:0}, 5000,function(){if(bloodDropIndex<3)
-            {
-                bloodDropIndex++;
-                var image= document.createElement("img");
-                image.src="../pics/blood-drop.gif";
-                image.id="blood-drop"+bloodDropIndex;
-                $("#myDiv").append(image);
-                AnimateAndCreateBloodDrops(top,left,bloodDropIndex)}
-               
-             });
+    blood_drop.animate({'top':'+=' + val,opacity:0}, 3000, function() {
+                if (bloodDropIndex < 3) {
+                    bloodDropIndex++;
+                    var image = document.createElement("img");
+                    image.src = "../pics/blood-drop.gif";
+                    image.id = "blood-drop" + bloodDropIndex;
+                    $("#myDiv").append(image);
+                    AnimateAndCreateBloodDrops(top, left, bloodDropIndex,snake)
+                }
+                else {
+                    snake.AfterBloodSimulationChangeTargetToHuman();
+                }
+            });
 }
-
-
 function simulateBloodFall(snake){
 
     var bloodDropIndex=1;
-    var referenceElement = $("#"+(snake.locationId));
-    AnimateAndCreateBloodDrops(referenceElement.offset().top,referenceElement.offset().left,bloodDropIndex);
+    var referenceElement = $("#" + (snake.locationId));
+    var top = referenceElement.offset().top;
+    var left = referenceElement.offset().left;
+    AnimateAndCreateBloodDrops(top,left, bloodDropIndex,snake);
 }
 
 
@@ -222,7 +227,7 @@ function InitRat()
 function SetTimeIntervalToActivateRat()
 {
   var rat=this;
-  setTimeout(function(){rat.showRat();},0);
+  setTimeout(function(){rat.showRat();},this.timeInterval);
 }
 
 function showRat()
@@ -287,9 +292,11 @@ function moveSnake() {
 function rand(n) {
     return Math.floor(Math.random() * n);
 }
+
 function MoveSnakeAfterTarget(){
      if(this.locationId==this.target.locationId){
          this.killTargetAndTakeAppropriateAction();
+         return;
       }
     ExecuteMovementInAllDirections(this);
  }
@@ -302,15 +309,16 @@ function SetTimeIntervalForSnakeMovement() {
 
 function MoveCreatureToId(creature,id)
 {
+    if(creature.IsForbiddenPosition(id)) return false;
     creature.locationId=id;
-    locationsOfAllCreatures[creature.htmlId] = id;
+    locationsOfAllCreatures[creature.id] = id;
      MoveToSameLocationAsObject($("#"+creature.htmlId),$("#"+id));
+    return true;
 }
 
 
 function IsForbiddenPosition(id)
 {
-
   for(var i=0; i< this.ForbiddenLocationCreatureKeys.length;i++)
       if(locationsOfAllCreatures[this.ForbiddenLocationCreatureKeys[i]]==id)
 		  return true;
@@ -326,8 +334,5 @@ function MoveToSameLocationAsObject(objectToBeMoved, targetObject)
 
 function MoveHuman(ev) 
 {
-   if(human.IsForbiddenPosition(this.id)) return;
-    MoveToSameLocationAsObject($("#"+human.humanHtmlId),$("#"+this.id));
-    human.locationId = this.id;
-
+    MoveCreatureToId(human,this.id);
 }
