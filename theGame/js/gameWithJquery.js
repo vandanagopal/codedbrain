@@ -6,11 +6,10 @@ function Rat(locationId, timeInterval)
 {
   this.observers=new Array();
   this.locationId = locationId;
-  this.ratHtmlId= creatureHtmlIds.rat;
+  this.htmlId= creatureHtmlIds.rat;
   this.timeInterval=timeInterval;
   this.InitRat=InitRat;
   this.SetTimeIntervalToActivateRat = SetTimeIntervalToActivateRat;
-  this.MoveRatToId=MoveRatToId;
   this.showRat=showRat;
   this.FreeRatFromCage=FreeRatFromCage;
   this.DistractSnake=DistractSnake;
@@ -18,7 +17,7 @@ function Rat(locationId, timeInterval)
     this.isAlive=true;
   this.move = function(newPosition, row, col){
       if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake1.locationId)){
-          this.MoveRatToId(newPosition);
+          MoveCreatureToId(this,newPosition);
           return true;
       }
       return false;
@@ -32,7 +31,7 @@ function Rat(locationId, timeInterval)
       }
   }
   this.die = function(){
-       $("#"+rat.ratHtmlId).css('display','none');
+       $("#"+rat.htmlId).css('display','none');
   }
 }
 
@@ -48,7 +47,7 @@ function init() {
                     }};
     snake1=new Snake(30,creatureHtmlIds.snake1,450);
     snake2=new Snake(5,creatureHtmlIds.snake2, 450);
-    rat= new Rat(20,300);
+    rat= new Rat(20,600);
     human=new Human();	
     snake1.InitSnake(new Array(creatureIds.snake2));
     snake2.InitSnake(new Array(creatureIds.snake1));
@@ -143,7 +142,7 @@ function Human()
 function Snake(snakeLocationId, snakeHtmlId, timeInterval)
 {
   this.locationId=snakeLocationId;
-  this.snakeHtmlId=snakeHtmlId;
+  this.htmlId=snakeHtmlId;
   this.timeInterval=timeInterval;
   this.SetTimeIntervalForSnakeMovement = SetTimeIntervalForSnakeMovement;
   this._assignPositionToSnake = this._assignPositionToSnake;
@@ -162,19 +161,54 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval)
     {
         if(this.IsForbiddenPosition(newPositionId)) return false;
         this.locationId=newPositionId;
-        locationsOfAllCreatures[this.snakeHtmlId] = newPositionId;
-        MoveToSameLocationAsObject($("#"+this.snakeHtmlId),$("#"+newPositionId));
+        locationsOfAllCreatures[this.htmlId] = newPositionId;
+        MoveToSameLocationAsObject($("#"+this.htmlId),$("#"+newPositionId));
         return true;
     }
 
     this.Notify = function(target){
         this.target=target;
     }
+    this.killTargetAndTakeAppropriateAction = function(){
+        this.target.die();
+        if(this.target==rat){
+            changePicForCreature(this,"snakeeatingmouse");
+            simulateBloodFall(this);
+            this.target=null;
+        }
+    }
 
 }
 
 var Creature = function(locationId){
     this.locationId = locationId;
+}
+
+
+function AnimateAndCreateBloodDrops(top,left,bloodDropIndex) {
+    var blood_drop = $("#blood-drop" + bloodDropIndex);
+
+    blood_drop.css({'position':'absolute','top':top+30 ,'left':left+30});
+    blood_drop.show();
+    var val = 588 - blood_drop.offset().top;
+    blood_drop.animate({'top':'+=' + val,opacity:0}, 5000,function(){if(bloodDropIndex<3)
+            {
+                bloodDropIndex++;
+                var image= document.createElement("img");
+                image.src="../pics/blood-drop.gif";
+                image.id="blood-drop"+bloodDropIndex;
+                $("#myDiv").append(image);
+                AnimateAndCreateBloodDrops(top,left,bloodDropIndex)}
+               
+             });
+}
+
+
+function simulateBloodFall(snake){
+
+    var bloodDropIndex=1;
+    var referenceElement = $("#"+(snake.locationId));
+    AnimateAndCreateBloodDrops(referenceElement.offset().top,referenceElement.offset().left,bloodDropIndex);
 }
 
 
@@ -188,30 +222,34 @@ function InitRat()
 function SetTimeIntervalToActivateRat()
 {
   var rat=this;
-  setTimeout(function(){rat.showRat();},3000);
+  setTimeout(function(){rat.showRat();},0);
 }
 
 function showRat()
 {
-  this.MoveRatToId(this.locationId);
-  var id=this.ratHtmlId;
+  MoveCreatureToId(this,this.locationId);
+  var id=this.htmlId;
   $("#"+id).fadeIn(5000);
   var rat=this;
-  $("#"+this.ratHtmlId).click(function(){rat.FreeRatFromCage();});
+  $("#"+this.htmlId).click(function(){rat.FreeRatFromCage();});
  
  }
 
  function FreeRatFromCage()
  {
-   $("#"+this.ratHtmlId).css('display','none');
-   this.ratHtmlId="freeMouse";
-   this.MoveRatToId(this.locationId);
-   $("#"+this.ratHtmlId).show();
+   changePicForCreature(this,"freeMouse");
+
    this.DistractSnake();
    this.Notify();
  }
 
-
+function changePicForCreature(targetObj, toPicId)
+{
+   $("#"+targetObj.htmlId).css('display','none');
+   targetObj.htmlId=toPicId;
+   MoveCreatureToId(targetObj,targetObj.locationId);
+   $("#"+toPicId).show();
+}
 function ExecuteMovementInAllDirections(creature) {
     var loopSeed = rand(movements.length);
     for (var i = 0; i < movements.length; i++){
@@ -231,7 +269,7 @@ function InitSnake(forbiddenLocationCreatureKeys)
 {
   this.ForbiddenLocationCreatureKeys = forbiddenLocationCreatureKeys;
   this._assignPositionToSnake(this.locationId);
-  $("#"+this.snakeHtmlId).show();
+  $("#"+this.htmlId).show();
   this.SetTimeIntervalForSnakeMovement();
   this.target=human;
 
@@ -240,6 +278,7 @@ function InitSnake(forbiddenLocationCreatureKeys)
 function moveSnake() {
 
     this.MoveSnakeAfterTarget();
+    if(this.target!=null)
     this.SetTimeIntervalForSnakeMovement();
 
 }
@@ -250,9 +289,8 @@ function rand(n) {
 }
 function MoveSnakeAfterTarget(){
      if(this.locationId==this.target.locationId){
-         this.target.die();
-         this.target = human;
-     }
+         this.killTargetAndTakeAppropriateAction();
+      }
     ExecuteMovementInAllDirections(this);
  }
 
@@ -262,11 +300,11 @@ function SetTimeIntervalForSnakeMovement() {
 }
 
 
-function MoveRatToId(id)
+function MoveCreatureToId(creature,id)
 {
-    this.locationId=id;
-    locationsOfAllCreatures[this.ratHtmlId] = id;
-     MoveToSameLocationAsObject($("#"+this.ratHtmlId),$("#"+id));
+    creature.locationId=id;
+    locationsOfAllCreatures[creature.htmlId] = id;
+     MoveToSameLocationAsObject($("#"+creature.htmlId),$("#"+id));
 }
 
 
