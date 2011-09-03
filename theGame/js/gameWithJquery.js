@@ -2,40 +2,6 @@ $(document).ready(function() {
     init();
 });
 
-function Rat(locationId, timeInterval,id)
-{
-  this.observers=new Array();
-  this.locationId = locationId;
-  this.id=id;
-  this.htmlId= creatureHtmlIds.rat;
-  this.timeInterval=timeInterval;
-  this.InitRat=InitRat;
-  this.SetTimeIntervalToActivateRat = SetTimeIntervalToActivateRat;
-  this.showRat=showRat;
-  this.FreeRatFromCage=FreeRatFromCage;
-  this.DistractSnake=DistractSnake;
-  this.IsForbiddenPosition=IsForbiddenPosition;
-  this.ForbiddenLocationCreatureKeys=new Array();
-  this.increaseTimeIntervalBy = 10;
-  this.move = function(newPosition, row, col){
-      if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake1.locationId)){
-          MoveCreatureToId(this,newPosition);
-          return true;
-      }
-      return false;
-  }
-  this.Attach=function(observer){
-             this.observers.push(observer);
-  }
-  this.Notify = function(){
-      for(var i=0;i<this.observers.length;i++){
-          this.observers[i].Notify(this);
-      }
-  }
-  this.die = function(){
-       $("#"+rat.htmlId).css('display','none');
-  }
-}
 
 function init() {
     locationsOfAllCreatures = new Array();
@@ -47,8 +13,8 @@ function init() {
                          if(row<0 || column<0 || row>5 || column>5) return true;
                          return false;
                     }};
-    snake1=new Snake(30,creatureHtmlIds.snake1,400,creatureIds.snake1);
-    snake2=new Snake(5,creatureHtmlIds.snake2, 400,creatureIds.snake2);
+    snake1=new Snake(30,creatureHtmlIds.snake1,500,creatureIds.snake1);
+    snake2=new Snake(5,creatureHtmlIds.snake2, 600,creatureIds.snake2);
     rat= new Rat(20,300,creatureIds.rat);
     human=new Human(creatureIds.human);
     snake1.InitSnake(new Array(creatureIds.snake2));
@@ -56,9 +22,27 @@ function init() {
 	rat.InitRat();
     rat.Attach(snake1);
     human.InitHuman(new Array(creatureIds.rat));
+	initDiamond();
 }
 
 
+function initDiamond(){
+diamond=new Diamond(5,'diamond');
+setTimeout(function(){$('#diamond').fadeIn(4000); diamond.visible=true; moveDiamond();},4000);
+
+  
+}
+
+function moveDiamond()
+ {
+ 
+     ExecuteMovementInAllDirections(diamond);
+      var position = rand(36);
+	  
+     if(diamond.visible)
+     setTimeout(moveDiamond,500);
+
+ }
 function movementFunctions()
 {
     return [function(target){
@@ -118,6 +102,54 @@ function nearest(currentLocationId, newLocationId, referenceLocationId)
 
   }
 
+  function Diamond(locationId,htmlId){
+  this.locationId=locationId;
+  this.htmlId=htmlId;
+  this.visible=false;
+  this.move = function(newPosition, row, col){
+      if(!board.isOutOfBounds(row, col)){
+          moveObject(this,newPosition);
+          return true;
+      }
+      return false;
+  }
+ }
+  function Rat(locationId, timeInterval,id)
+{
+  this.observers=new Array();
+  this.locationId = locationId;
+  this.id=id;
+  this.htmlId= creatureHtmlIds.rat;
+  this.timeInterval=timeInterval;
+  this.InitRat=InitRat;
+  this.SetTimeIntervalToActivateRat = SetTimeIntervalToActivateRat;
+  this.showRat=showRat;
+  this.FreeRatFromCage=FreeRatFromCage;
+  this.DistractSnake=DistractSnake;
+  this.IsForbiddenPosition=IsForbiddenPosition;
+  this.ForbiddenLocationCreatureKeys=new Array();
+  this.increaseTimeIntervalBy = 10;
+  this.move = function(newPosition, row, col){
+      if(!board.isOutOfBounds(row, col) &&  this.locationId != farthest(this.locationId,newPosition, snake1.locationId)){
+          MoveCreatureToId(this,newPosition);
+          return true;
+      }
+      return false;
+  }
+  this.Attach=function(observer){
+             this.observers.push(observer);
+  }
+  this.Notify = function(){
+      for(var i=0;i<this.observers.length;i++){
+          this.observers[i].Notify(this);
+      }
+  }
+  this.die = function(){
+       $("#"+rat.htmlId).css('display','none');
+  }
+}
+
+
 function InitHuman(forbiddenLocationCreatureKeys)
 {
     this.ForbiddenLocationCreatureKeys = forbiddenLocationCreatureKeys;
@@ -131,6 +163,7 @@ function Human(id)
 {
   this.locationId=2;
   this.id=id;
+  this.visible=true;
   this.htmlId=creatureHtmlIds.human;
   this.InitHuman=InitHuman;
   this.IsForbiddenPosition=IsForbiddenPosition;
@@ -176,6 +209,9 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval,id)
             simulateBloodFall(this);
             this.target=this;
         }
+		if(this.target==human){
+		  $('#human').effect('explode',{pieces:20},3000,endGameWhenHumanLost);
+		  }
     }
     this.AfterBloodSimulationChangeTargetToHuman = function(){
         this.target=human;
@@ -294,11 +330,12 @@ function rand(n) {
 }
 
 function MoveSnakeAfterTarget(){
-     if(this.locationId==this.target.locationId){
+
+    ExecuteMovementInAllDirections(this);
+	if(this.locationId==this.target.locationId){
          this.killTargetAndTakeAppropriateAction();
          return;
       }
-    ExecuteMovementInAllDirections(this);
  }
 
 function SetTimeIntervalForSnakeMovement() {
@@ -310,12 +347,17 @@ function SetTimeIntervalForSnakeMovement() {
 function MoveCreatureToId(creature,id)
 {
     if(creature.IsForbiddenPosition(id)) return false;
-    creature.locationId=id;
     locationsOfAllCreatures[creature.id] = id;
-     MoveToSameLocationAsObject($("#"+creature.htmlId),$("#"+id));
-    return true;
+		return moveObject(creature,id);
 }
 
+function moveObject(object,id)
+{
+    
+    object.locationId=id;
+    MoveToSameLocationAsObject($("#"+object.htmlId),$("#"+id));
+    return true;
+}
 
 function IsForbiddenPosition(id)
 {
@@ -334,5 +376,67 @@ function MoveToSameLocationAsObject(objectToBeMoved, targetObject)
 
 function MoveHuman(ev) 
 {
+     if(human.visible==false) return;
+     if(hasHumanTouchedDiamond()){
+	   stopSnakes(); 
+	   $('#diamond').effect('explode',{pieces:20},3000,allowHumanToGoToNextLevel);
+	 }
+	   
+	 
     MoveCreatureToId(human,this.id);
+	
+}
+
+function hasHumanTouchedDiamond(){
+return human.locationId==diamond.locationId && diamond.visible;
+}
+function allowHumanToGoToNextLevel(){
+ 
+ fadeOutSnakes();
+ diamond.visible=false; 
+ makeExitDoorVisible();
+}
+
+function fadeOutSnakes(){
+
+ 
+ $('#' + snake1.htmlId).fadeOut(3000);
+ $('#' + snake2.htmlId).fadeOut(3000);
+
+}
+
+function stopSnakes(){
+snake1.target=null;
+ snake2.target=null;
+}
+function makeExitDoorVisible(){
+ MoveToSameLocationAsObject($('#door'),$('#17'));
+ $('#door').fadeIn(5000);
+ $('#door').mouseover(sendHumanToExit);
+
+}
+
+function sendHumanToExit(){
+
+MoveToSameLocationAsObject($("#exitDoorWithHuman"),$("#door"));
+$("#door").css('display','none');
+$("#human").css('display','none');
+human.visible=false;
+$("#exitDoorWithHuman").show();
+setTimeout(function(){closeTheDoor();},1000);
+}
+
+function closeTheDoor(){
+ MoveToSameLocationAsObject($("#closedDoor"),$("#exitDoorWithHuman"));
+ $("#exitDoorWithHuman").css('display','none');
+ $("#closedDoor").fadeIn(1000);
+}
+
+function endGameWhenHumanLost(){
+snake1.target=null;
+snake2.target=null;
+fadeOutSnakes();
+diamond.visible=false;
+$('#diamond').fadeOut(3000);
+$('#'+rat.htmlId).fadeOut(3000);
 }
