@@ -13,8 +13,8 @@ function init() {
                          if(row<0 || column<0 || row>5 || column>5) return true;
                          return false;
                     }};
-    snake1=new Snake(30,creatureHtmlIds.snake1,500,creatureIds.snake1);
-    snake2=new Snake(5,creatureHtmlIds.snake2, 600,creatureIds.snake2);
+    snake1=new Snake(30,creatureHtmlIds.snake1,600,creatureIds.snake1);
+    snake2=new Snake(5,creatureHtmlIds.snake2, 650,creatureIds.snake2);
     rat= new Rat(20,300,creatureIds.rat);
     human=new Human(creatureIds.human);
     snake1.InitSnake(new Array(creatureIds.snake2));
@@ -23,26 +23,27 @@ function init() {
     rat.Attach(snake1);
     human.InitHuman(new Array(creatureIds.rat));
 	initDiamond();
+	 
 }
 
 
 function initDiamond(){
 diamond=new Diamond(5,'diamond');
-setTimeout(function(){$('#diamond').fadeIn(4000); diamond.visible=true; moveDiamond();},4000);
+setTimeout(function(){$('#diamond').fadeIn(4000); diamond.visible=true; $('#diamond').mouseover(MoveHuman);moveDiamond();},4000);
 
   
 }
 
 function moveDiamond()
  {
- 
-     ExecuteMovementInAllDirections(diamond);
-      var position = rand(36);
-	  
+
+      var position = rand(29);
+      moveObject(diamond,position);	  
      if(diamond.visible)
-     setTimeout(moveDiamond,500);
+     setTimeout(moveDiamond,3500);
 
  }
+ 
 function movementFunctions()
 {
     return [function(target){
@@ -377,18 +378,18 @@ function MoveToSameLocationAsObject(objectToBeMoved, targetObject)
 function MoveHuman(ev) 
 {
      if(human.visible==false) return;
-     if(hasHumanTouchedDiamond()){
+     
+     MoveCreatureToId(human,this.id);
+	  if(hasHumanTouchedDiamond()){
+	   $('#diamond').clearQueue();
 	   stopSnakes(); 
 	   $('#diamond').effect('explode',{pieces:20},3000,allowHumanToGoToNextLevel);
 	 }
-	   
-	 
-    MoveCreatureToId(human,this.id);
 	
 }
 
 function hasHumanTouchedDiamond(){
-return human.locationId==diamond.locationId && diamond.visible;
+return human.locationId=='diamond';
 }
 function allowHumanToGoToNextLevel(){
  
@@ -424,12 +425,14 @@ $("#human").css('display','none');
 human.visible=false;
 $("#exitDoorWithHuman").show();
 setTimeout(function(){closeTheDoor();},1000);
+alert('Congratulations!!!! You have beaten the coded brain. To play again, refresh the page');
 }
 
 function closeTheDoor(){
  MoveToSameLocationAsObject($("#closedDoor"),$("#exitDoorWithHuman"));
  $("#exitDoorWithHuman").css('display','none');
  $("#closedDoor").fadeIn(1000);
+ 
 }
 
 function endGameWhenHumanLost(){
