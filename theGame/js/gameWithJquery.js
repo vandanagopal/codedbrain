@@ -1,9 +1,31 @@
 $(document).ready(function() {
-    init();
+$('#instructionLink').click(function(e){displayInstructions(e);});
+$('#playLink').click(function(e){beginGame(e);});
+
 });
 
+function displayInstructions(e){
+$('#instructions').toggle();
+e.preventDefault();
+}
+
+function beginGame(e){
+clearRemainsOfPreviousGame();
+init();
+e.preventDefault();
+}
+
+function clearRemainsOfPreviousGame(){
+       $("#diamond").css('display','none');
+       $("#door").css('display','none');
+       $("#exitDoorWithHuman").css('display','none');
+       $("#closedDoor").css('display','none');
+       $('#freeMouse').clearQueue();
+       
+}
 
 function init() {
+
     locationsOfAllCreatures = new Array();
     movements= movementFunctions();
 	creatureHtmlIds={snake1:"snakey1",snake2:"snakey2",human:"human",rat:"mouseCage1",snakeeatingmouse:"snakeeatingmouse"};
@@ -23,6 +45,7 @@ function init() {
     rat.Attach(snake1);
     human.InitHuman(new Array(creatureIds.rat));
 	initDiamond();
+	
 	 
 }
 
@@ -211,6 +234,8 @@ function Snake(snakeLocationId, snakeHtmlId, timeInterval,id)
             this.target=this;
         }
 		if(this.target==human){
+          	   stopSnakes(); 
+                   human.visible=false; 
 		  $('#human').effect('explode',{pieces:20},3000,endGameWhenHumanLost);
 		  }
     }
@@ -301,6 +326,7 @@ function ExecuteMovementInAllDirections(creature) {
 }
 function DistractSnake()
  {
+    if(rat.htmlId != 'freeMouse') return;
      ExecuteMovementInAllDirections(rat);
 
      setTimeout(rat.DistractSnake,rat.timeInterval+=rat.increaseTimeIntervalBy);
@@ -389,7 +415,7 @@ function MoveHuman(ev)
 }
 
 function hasHumanTouchedDiamond(){
-return human.locationId=='diamond';
+return human.locationId=='diamond' && diamond.visible==true;
 }
 function allowHumanToGoToNextLevel(){
  
@@ -418,21 +444,22 @@ function makeExitDoorVisible(){
 }
 
 function sendHumanToExit(){
-
+if(!human.visible) return;
 MoveToSameLocationAsObject($("#exitDoorWithHuman"),$("#door"));
 $("#door").css('display','none');
 $("#human").css('display','none');
 human.visible=false;
 $("#exitDoorWithHuman").show();
 setTimeout(function(){closeTheDoor();},1000);
-alert('Congratulations!!!! You have beaten the coded brain. To play again, refresh the page');
+alert('Congratulations!!!! You have beaten the coded brain.');
 }
 
 function closeTheDoor(){
  MoveToSameLocationAsObject($("#closedDoor"),$("#exitDoorWithHuman"));
  $("#exitDoorWithHuman").css('display','none');
  $("#closedDoor").fadeIn(1000);
- 
+$('#'+rat.htmlId).fadeOut(3000); 
+ $("#closedDoor").fadeOut(3000);
 }
 
 function endGameWhenHumanLost(){
@@ -442,4 +469,5 @@ fadeOutSnakes();
 diamond.visible=false;
 $('#diamond').fadeOut(3000);
 $('#'+rat.htmlId).fadeOut(3000);
+alert('Ahh!! You lost! Looks like your mind isn\'t a match for the coded brain');
 }

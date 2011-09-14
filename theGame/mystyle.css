@@ -17,9 +17,15 @@ border: 1px solid black;
 table
 {
 table-layout:fixed;
+margin-left : 150px;
 }
 
 .invisible
 {
  display:none
+}
+
+h1{
+text-align : center;
+background-color:#FF7256;
 }
