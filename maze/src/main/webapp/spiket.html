@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript">
+function getAngle(x, y, angle, h) {
+    var radians = angle * (Math.PI / 180);
+    return { x: x + h * Math.cos(radians), y: y + h * Math.sin(radians) };
+}
+</script>
+
+</head>
+<body>
+
+<canvas id="myCanvas" width="3000" height="3000" style="border:1px solid #c3c3c3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas>
+
+<script type="text/javascript">
+//Circles
+var centerCircle=1500;
+var c=document.getElementById("myCanvas");
+var ctx=c.getContext("2d");
+ctx.lineWidth = 10;
+ctx.strokeStyle = "black";
+
+for(i=1;i<4;i++){
+ctx.beginPath();
+ctx.arc(centerCircle,centerCircle,300*i,0,Math.PI*2,false);
+ctx.closePath();
+ctx.stroke();
+}
+
+
+for(var i=0;i<6;i++){
+ctx.moveTo(centerCircle,centerCircle);
+pos=getAngle(centerCircle,centerCircle,30*i,900);
+ctx.lineTo(pos.x,pos.y);
+ctx.stroke();
+
+ctx.moveTo(centerCircle,centerCircle);
+pos=getAngle(centerCircle,centerCircle,180+30*i,900);
+ctx.lineTo(pos.x,pos.y);
+ctx.stroke();
+}
+
+
+</script>
+
+</body>
+</html>
+
+

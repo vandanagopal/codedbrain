@@ -23,4 +23,5 @@ public class ThetaMaze {
     public Cell getInitialStartCell() {
         return initialStartCell;
     }
+
 }

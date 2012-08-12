@@ -1,14 +1,8 @@
 package org.maze.domain;
 
-import ch.lambdaj.function.matcher.Predicate;
-import org.hamcrest.Matcher;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static ch.lambdaj.Lambda.filter;
-import static ch.lambdaj.Lambda.forEach;
 
 public class Cell {
     private int circleIndex;
@@ -40,51 +34,24 @@ public class Cell {
     }
 
 
-    private Cell getNeighbour(WallDirectionEnum wallDirection) {
+    public Cell getNeighbour(WallDirectionEnum wallDirection) {
         Wall wall = getWallPassageMap().get(wallDirection);
         return wall == null ? null : wall.getOtherCell(this);
-    }
-
-    private Cell getOpenNeighbour(WallDirectionEnum wallDirection) {
-        Wall wall = getWallPassageMap().get(wallDirection);
-        if (wall == null || wall.getWallStatus() == WallStatusEnum.Closed)
-            return null;
-        return wall.getOtherCell(this);
-    }
-
-    public HashMap<WallDirectionEnum, Cell> getNeighbours() {
-        HashMap<WallDirectionEnum, Cell> map = new HashMap<WallDirectionEnum, Cell>();
-        for (WallDirectionEnum wallDirection : WallDirectionEnum.getValues())
-            map.put(wallDirection, getNeighbour(wallDirection));
-        return map;
-    }
-
-    public HashMap<WallDirectionEnum, Cell> getOpenNeighbours() {
-        HashMap<WallDirectionEnum, Cell> map = new HashMap<WallDirectionEnum, Cell>();
-        for (WallDirectionEnum wallDirection : WallDirectionEnum.getValues())
-            map.put(wallDirection, getOpenNeighbour(wallDirection));
-        return map;
     }
 
     public void setHasBeenVisited(boolean hasBeenVisited) {
         this.hasBeenVisited = hasBeenVisited;
     }
 
-    public boolean getHasBeenVisited() {
-        return hasBeenVisited;
-    }
-
-    public List<Map.Entry<WallDirectionEnum,Cell>> getUnvisitedNeighbours(){
-        List<Map.Entry<WallDirectionEnum, Cell>> filter = filter(notVisitedNeighboursPredicate, getNeighbours().entrySet());
-        forEach(filter,)
-        return filter;
-    }
-
-    Matcher<Map.Entry<WallDirectionEnum, Cell>> notVisitedNeighboursPredicate = new Predicate<Map.Entry<WallDirectionEnum, Cell>>() {
-        @Override
-        public boolean apply(Map.Entry<WallDirectionEnum, Cell> cellMap) {
-            return !cellMap.getValue().getHasBeenVisited();
+    public List<Neighbour> getUnvisitedNeighbours() {
+        List<Neighbour> unvisitedNeighbours=new ArrayList<Neighbour>();
+        for(WallDirectionEnum wallDirection : wallPassageMap.keySet()) {
+            Cell neighbour = getNeighbour(wallDirection);
+            if (!neighbour.hasBeenVisited)
+                unvisitedNeighbours.add(new Neighbour(neighbour,wallDirection));
         }
-    };
+        return unvisitedNeighbours;
+    }
+
 
 }

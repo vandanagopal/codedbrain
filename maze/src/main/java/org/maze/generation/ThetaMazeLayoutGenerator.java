@@ -38,6 +38,8 @@ public class ThetaMazeLayoutGenerator {
 
     }
 
+
+
     private List<Cell> populateCellsInACircle(int circleNumber, List<Cell> cellsInTheOuterCircle) {
         ArrayList<Cell> cellsInACircle = new ArrayList<Cell>();
         for(int sectorNumber=0;sectorNumber<numberOfSectors;sectorNumber++){
