@@ -17,11 +17,11 @@ public class ThetaMazeLayoutGenerator {
         this.numberOfSectors = numberOfSectors;
     }
 
-    
-    public ThetaMaze generateLayout(){
+
+    public ThetaMaze generateLayout() {
         List<List<Cell>> circleDictionary = new ArrayList<List<Cell>>();
-        for(int circleNumber=0;circleNumber<numberOfConcentricCircles-1;circleNumber++){
-            List<Cell> cellsInTheOuterCircle = circleNumber==0? null: circleDictionary.get(circleNumber - 1);
+        for (int circleNumber = 0; circleNumber < numberOfConcentricCircles - 1; circleNumber++) {
+            List<Cell> cellsInTheOuterCircle = circleNumber == 0 ? null : circleDictionary.get(circleNumber - 1);
             List<Cell> cellsInACircle = populateCellsInACircle(circleNumber, cellsInTheOuterCircle);
             circleDictionary.add(cellsInACircle);
 
@@ -29,8 +29,8 @@ public class ThetaMazeLayoutGenerator {
         List<Cell> cellsInTheLastButOneCircle = circleDictionary.get(numberOfConcentricCircles - 2);
         Cell cellInTheLastCircle = new Cell(numberOfConcentricCircles - 1, 0);
         circleDictionary.add(Arrays.asList(cellInTheLastCircle));
-        for(Cell cell : cellsInTheLastButOneCircle){
-            cell.addWall(WallDirectionEnum.Down, new Wall(WallStatusEnum.Closed, cell,cellInTheLastCircle));
+        for (Cell cell : cellsInTheLastButOneCircle) {
+            cell.addWall(WallDirectionEnum.Down, new Wall(WallStatusEnum.Closed, cell, cellInTheLastCircle));
         }
 
         return new ThetaMaze(circleDictionary);
@@ -39,15 +39,14 @@ public class ThetaMazeLayoutGenerator {
     }
 
 
-
     private List<Cell> populateCellsInACircle(int circleNumber, List<Cell> cellsInTheOuterCircle) {
         ArrayList<Cell> cellsInACircle = new ArrayList<Cell>();
-        for(int sectorNumber=0;sectorNumber<numberOfSectors;sectorNumber++){
-            cellsInACircle.add(new Cell(circleNumber,sectorNumber));
+        for (int sectorNumber = 0; sectorNumber < numberOfSectors; sectorNumber++) {
+            cellsInACircle.add(new Cell(circleNumber, sectorNumber));
         }
-        for(int sectorNumber=0;sectorNumber<numberOfSectors;sectorNumber++){
+        for (int sectorNumber = 0; sectorNumber < numberOfSectors; sectorNumber++) {
             createWallBetweenLeftAndRightCells(cellsInACircle, sectorNumber);
-            if(cellsInTheOuterCircle!=null)
+            if (cellsInTheOuterCircle != null)
                 createWallBetweenAboveAndBelowCells(cellsInTheOuterCircle, cellsInACircle, sectorNumber);
 
         }

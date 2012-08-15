@@ -1,8 +1,11 @@
 package org.maze.generation;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.maze.domain.*;
 import org.maze.utils.Random;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Stack;
@@ -25,7 +28,6 @@ public class DFSAlgorithmMazeProcessor {
                 }
             else {
                 openTheWall(currentCell, unvisitedNeighbour);
-
                 currentCell = unvisitedNeighbour.getCell();
                 dfsStack.push(currentCell);
             }
@@ -34,8 +36,12 @@ public class DFSAlgorithmMazeProcessor {
 
     }
 
+
+
+
     private void openTheWall(Cell currentCell, Neighbour unvisitedNeighbour) {
         Cell neighbourCell = unvisitedNeighbour.getCell();
+        neighbourCell.setHasBeenVisited(true);
         Wall wall = new Wall(WallStatusEnum.Open, currentCell, neighbourCell);
         WallDirectionEnum directionRelativeToCurrentCell = unvisitedNeighbour.getDirection();
         currentCell.addWall(directionRelativeToCurrentCell, wall);

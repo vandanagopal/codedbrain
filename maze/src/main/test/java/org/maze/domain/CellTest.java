@@ -6,6 +6,7 @@ import java.util.List;
 
 import static ch.lambdaj.Lambda.*;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 public class CellTest {
@@ -27,6 +28,26 @@ public class CellTest {
         assertEquals(2,unvisitedNeighbours.size());
         assertEquals(cellBelow, getNeighbour(unvisitedNeighbours, WallDirectionEnum.Down));
         assertEquals(cellLeft, getNeighbour(unvisitedNeighbours, WallDirectionEnum.Left));
+    }
+
+    @Test
+    public void shouldGetOpenNeighbours(){
+
+        Cell cell = new Cell(2, 3);
+        Cell cellAbove = new Cell(2, 2);
+        Cell cellBelow = new Cell(4, 4);
+        Cell cellLeft = new Cell(3, 3);
+
+        cellAbove.setHasBeenVisited(true);
+
+        cell.addWall(WallDirectionEnum.Up, new Wall(WallStatusEnum.Open, cell, cellAbove));
+        cell.addWall(WallDirectionEnum.Down, new Wall(WallStatusEnum.Closed, cell, cellBelow));
+        cell.addWall(WallDirectionEnum.Left, new Wall(WallStatusEnum.Open, cell, cellLeft));
+        List<Neighbour> openWallNeighbours = cell.getOpenWallNeighbours();
+        assertEquals(2,openWallNeighbours.size());
+        assertTrue(openWallNeighbours.contains(new Neighbour(cellAbove,WallDirectionEnum.Up)));
+        assertTrue(openWallNeighbours.contains(new Neighbour(cellLeft,WallDirectionEnum.Left)));
+
     }
 
     private Cell getNeighbour(List<Neighbour> neighbours, WallDirectionEnum direction) {
