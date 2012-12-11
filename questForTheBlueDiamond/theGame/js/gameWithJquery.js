@@ -10,6 +10,7 @@ e.preventDefault();
 }
 
 function beginGame(e){
+$('#playLink').hide();
 clearRemainsOfPreviousGame();
 init();
 e.preventDefault();
@@ -452,6 +453,7 @@ human.visible=false;
 $("#exitDoorWithHuman").show();
 setTimeout(function(){closeTheDoor();},1000);
 alert('Congratulations!!!! You have beaten the coded brain.');
+$('#playLink').show();
 }
 
 function closeTheDoor(){
@@ -470,4 +472,5 @@ diamond.visible=false;
 $('#diamond').fadeOut(3000);
 $('#'+rat.htmlId).fadeOut(3000);
 alert('Ahh!! You lost! Looks like your mind isn\'t a match for the coded brain');
+$('#playLink').show();
 }
